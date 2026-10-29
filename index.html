@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIHAR FREE FIRE CUSTOM TOURNAMENT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#070911',
+                        ffCard: '#151b2b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes rgbBorder {
+            0% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
+            20% { border-color: #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.6); }
+            40% { border-color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
+            60% { border-color: #0088ff; box-shadow: 0 0 15px rgba(0, 136, 255, 0.6); }
+            80% { border-color: #aa00ff; box-shadow: 0 0 15px rgba(170, 0, 255, 0.6); }
+            100% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
+        }
+        .rgb-card {
+            border: 2px solid #ff0055;
+            animation: rgbBorder 5s linear infinite;
+        }
+        .match-bg-image {
+            background: linear-gradient(135deg, rgba(7, 9, 17, 0.88) 0%, rgba(15, 20, 35, 0.90) 100%),
+                        url('https://placehold.co/600x300/0b0f19/f3f4f6?text=BIHAR+FF+TOURNAMENT') center/cover no-repeat;
+        }
+        body {
+            background-color: #070911;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .tab-content {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease-in-out;
+        }
+        .slide-left {
+            transform: translateX(-30px);
+            opacity: 0;
+        }
+        .slide-right {
+            transform: translateX(30px);
+            opacity: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070911;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b45309;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-28 selection:bg-amber-500 selection:text-black">
+
+    <!-- AUTHENTICATION / REGISTRATION MODAL WITH OTP & REFERRAL (Hidden by default, triggered on action) -->
+    <div id="authScreen" class="fixed inset-0 bg-[#070911]/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto hidden">
+        <div class="rgb-card match-bg-image w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl my-auto relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400 mx-auto shadow-lg shadow-amber-500/30 bg-slate-950 flex items-center justify-center">
+                    <img src="https://placehold.co/120x120/0b0f19/f3f4f6?text=BIHAR+FF" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                <h1 class="font-black text-xs tracking-tight text-amber-400 uppercase">PLAYER REGISTRATION & SESSION</h1>
+                <p class="text-[10px] text-gray-300">Your account data is permanently saved on your device.</p>
+            </div>
+
+            <!-- STEP 1: Basic Contact & Verification -->
+            <div id="authStep1" class="space-y-3 text-xs">
+                <div>
+                    <label class="text-[10px] text-amber-300 font-bold mb-1 block uppercase">Player Name</label>
+                    <input type="text" id="regName" placeholder="e.g. ꧁₹ahul꧂" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] text-amber-300 font-bold mb-1 block uppercase">Mobile Number OR Email ID</label>
+                    <input type="text" id="regContact" placeholder="Enter Mobile Number or Email ID" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white outline-none font-mono">
+                </div>
+                <button onclick="requestVerificationCode()" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-black font-black py-2.5 rounded-xl text-xs shadow-lg shadow-orange-500/30 active:scale-95 transition uppercase tracking-wider flex items-center justify-center gap-1.5 mt-1">
+                    <i class="fa-solid fa-paper-plane"></i> Send Verification Code (OTP)
+                </button>
+            </div>
+
+            <!-- STEP 2: Enter Verification Code & FF Details -->
+            <div id="authStep2" class="space-y-3 text-xs hidden">
+                <div class="bg-amber-500/10 border border-amber-500/40 p-2.5 rounded-xl text-center space-y-1">
+                    <p class="text-[10px] text-amber-300 font-bold">🤖 Bot Verification Sent!</p>
+                    <p class="text-[9px] text-gray-300">Your Auto-Generated Verification Code is: <span id="displayOtp" class="text-amber-400 font-black font-mono text-xs bg-black px-1.5 py-0.5 rounded">123456</span></p>
+                </div>
+                <div>
+                    <label class="text-[10px] text-amber-300 font-bold mb-1 block uppercase">Enter Verification Code</label>
+                    <input type="text" id="enteredOtp" placeholder="Enter 6-digit code" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-amber-400 font-mono tracking-widest text-center font-bold outline-none">
+                </div>
+                
+                <hr class="border-slate-800 my-1">
+                <p class="text-[10px] text-orange-400 font-bold uppercase">🎮 Free Fire In-Game Details:</p>
+                
+                <div>
+                    <label class="text-[9px] text-gray-400 font-bold mb-0.5 block uppercase">Free Fire In-Game Name</label>
+                    <input type="text" id="regFfName" placeholder="e.g. ꧁BFF•BOSS꧂" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white outline-none">
+                </div>
+                <div>
+                    <label class="text-[9px] text-gray-400 font-bold mb-0.5 block uppercase">Free Fire UID</label>
+                    <input type="number" id="regFfUid" placeholder="e.g. 849201928" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-amber-400 font-mono outline-none font-bold">
+                </div>
+
+                <div>
+                    <label class="text-[9px] text-gray-400 font-bold mb-0.5 block uppercase">Referral Code (Optional)</label>
+                    <input type="text" id="regReferral" placeholder="e.g. BIHARFF2026" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-cyan-400 font-mono outline-none">
+                </div>
+
+                <button onclick="completeRegistration()" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-black font-black py-2.5 rounded-xl text-xs shadow-lg shadow-orange-500/30 active:scale-95 transition uppercase tracking-wider flex items-center justify-center gap-1.5 mt-1">
+                    <i class="fa-solid fa-shield-check"></i> Complete Registration & Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header with RGB Boundary -->
+    <header class="rgb-card bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 px-3 py-2.5 flex justify-between items-center rounded-b-2xl border-t-0">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-md shadow-amber-500/30 bg-slate-950 flex items-center justify-center relative">
+                <img src="https://placehold.co/120x120/0b0f19/f3f4f6?text=BIHAR+FF" alt="Logo" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <h1 class="font-black text-[11px] tracking-tight text-amber-400 flex items-center gap-1 leading-tight">
+                    BIHAR FREE FIRE CUSTOM TOURNAMENT
+                </h1>
+                <p class="text-[9px] text-emerald-400 font-semibold mt-0.5">
+                    <i class="fa-solid fa-clock text-[7px] text-amber-400"></i> Timing: 10 AM - 11 PM | 
+                    <span class="text-rose-400 font-bold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/30">Sun Off</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <button onclick="switchTab('wallet')" class="bg-amber-500/10 border border-amber-500/50 text-amber-400 px-2 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1 shadow">
+                <i class="fa-solid fa-wallet"></i> <span id="quickWalletBal">₹0</span>
+            </button>
+            <button onclick="switchTab('profile')" class="bg-cyan-500/10 border border-cyan-500/50 text-cyan-400 px-2.5 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1 shadow" title="Player Profile">
+                <i class="fa-solid fa-user-shield"></i> Profile
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container (Home Tab) -->
+    <main id="homeTabContent" class="max-w-md mx-auto p-4 space-y-4 tab-content">
+
+        <!-- Notification Banner -->
+        <div class="rgb-card bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-xl p-3 flex items-center gap-2.5 text-xs shadow-lg">
+            <i class="fa-solid fa-shield-cat text-amber-400 text-base animate-pulse"></i>
+            <div>
+                <p class="text-[11px] font-bold text-amber-300">⚡ Official Match Schedule & Rules:</p>
+                <p class="text-[10px] text-gray-300 mt-0.5">Matches run daily 10 AM to 11 PM. Sundays are strict holiday (Off). Min withdrawal: ₹50.</p>
+            </div>
+        </div>
+
+        <!-- Wallet Balance Bar -->
+        <div class="rgb-card match-bg-image p-4 rounded-2xl flex justify-between items-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 text-orange-500/10 text-8xl font-black pointer-events-none"><i class="fa-solid fa-fire"></i></div>
+            <div>
+                <p class="text-[10px] text-orange-300 uppercase font-extrabold tracking-wider">Wallet Balance</p>
+                <h2 class="text-3xl font-black text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)]" id="walletBalance">₹0.00</h2>
+            </div>
+            <div class="flex space-x-2 z-10">
+                <button onclick="openWalletModal('add')" class="rgb-card bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-black px-4 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 transition flex items-center gap-1 border-amber-300">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Add
+                </button>
+                <button onclick="openWalletModal('withdraw')" class="rgb-card bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-rose-600/20 active:scale-95 transition border-rose-400">
+                    Withdraw
+                </button>
+            </div>
+        </div>
+
+        <!-- DAILY LOGIN REWARDS -->
+        <div class="rgb-card match-bg-image p-4 rounded-2xl space-y-3 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-xs text-amber-400 flex items-center gap-1.5 uppercase tracking-wide">
+                    <i class="fa-solid fa-gift text-orange-400"></i> Daily Login Rewards
+                </h3>
+                <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono font-bold" id="currentDayText">Day 1 / 7</span>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center" id="dailyRewardGrid"></div>
+            <button id="claimDailyBtn" onclick="claimDailyReward()" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 hover:from-amber-500 hover:to-orange-700 text-black font-black py-2.5 rounded-xl text-xs shadow-lg shadow-orange-500/20 active:scale-95 transition uppercase tracking-wide">
+                🎁 Claim Reward
+            </button>
+        </div>
+
+        <!-- SOCIAL MEDIA COMMUNITY LINKS -->
+        <div class="grid grid-cols-3 gap-2.5">
+            <a id="linkTelegram" href="https://t.me/bihar_free_fire_tournament" target="_blank" class="rgb-card match-bg-image hover:bg-slate-900 p-3 rounded-xl text-center text-cyan-400 font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-telegram text-lg text-cyan-400"></i> Telegram
+            </a>
+            <a id="linkYoutube" href="https://youtube.com/@biharfreefirecustom" target="_blank" class="rgb-card match-bg-image hover:bg-slate-900 p-3 rounded-xl text-center text-rose-400 font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-youtube text-lg text-rose-500"></i> YouTube
+            </a>
+            <a id="linkWhatsapp" href="https://whatsapp.com/channel/biharff" target="_blank" class="rgb-card match-bg-image hover:bg-slate-900 p-3 rounded-xl text-center text-emerald-400 font-bold text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-whatsapp text-lg text-emerald-400"></i> WhatsApp
+            </a>
+        </div>
+
+        <!-- TOURNAMENT MATCHES LIST -->
+        <div class="space-y-4">
+            <h2 class="text-xs font-black text-orange-400 uppercase tracking-widest px-1 flex items-center gap-1.5"><i class="fa-solid fa-crosshairs text-orange-500"></i> Active Custom Tournaments</h2>
+            
+            <!-- Match 1 -->
+            <div class="rgb-card match-bg-image rounded-2xl p-3.5 shadow-xl space-y-2.5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-orange-950/80 text-orange-300 border border-orange-500/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase"><i class="fa-solid fa-fire text-amber-400"></i> SOLO • Bermuda</span>
+                        <h3 class="font-black text-xs text-white mt-1 flex items-center gap-1">
+                            Bermuda Solo War <span class="text-[9px] text-emerald-400 font-mono font-normal">#SOLO400</span>
+                        </h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-emerald-500/40 shadow-inner">
+                        <p class="text-[8px] text-emerald-300 uppercase font-extrabold tracking-wider">Entry Fee</p>
+                        <p class="font-black text-emerald-400 text-base mt-0.5">₹29</p>
+                    </div>
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/40 shadow-inner">
+                        <p class="text-[8px] text-amber-300 uppercase font-extrabold tracking-wider">Prize Pool (Total ₹400)</p>
+                        <div class="flex justify-around mt-0.5">
+                            <div><span class="text-[8px] text-amber-200/80 block">1st</span><span class="font-black text-amber-400 text-xs">₹280</span></div>
+                            <div><span class="text-[8px] text-amber-200/80 block">2nd</span><span class="font-black text-amber-400 text-[10px]">₹120</span></div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="joinMatch('Bermuda Solo War', 29, 400)" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-black font-black text-[11px] py-2.5 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition uppercase tracking-wider flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-gamepad"></i> Join Solo Match
+                </button>
+            </div>
+
+            <!-- Match 2 -->
+            <div class="rgb-card match-bg-image rounded-2xl p-3.5 shadow-xl space-y-2.5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-amber-950/80 text-amber-300 border border-amber-500/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase"><i class="fa-solid fa-fire text-orange-400"></i> DUO • Bermuda</span>
+                        <h3 class="font-black text-xs text-white mt-1 flex items-center gap-1">
+                            Bermuda Duo War <span class="text-[9px] text-emerald-400 font-mono font-normal">#DUO500</span>
+                        </h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-emerald-500/40 shadow-inner">
+                        <p class="text-[8px] text-emerald-300 uppercase font-extrabold tracking-wider">Entry Fee</p>
+                        <p class="font-black text-emerald-400 text-base mt-0.5">₹39</p>
+                    </div>
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/40 shadow-inner">
+                        <p class="text-[8px] text-amber-300 uppercase font-extrabold tracking-wider">Prize Pool (Total ₹500)</p>
+                        <div class="flex justify-around mt-0.5">
+                            <div><span class="text-[8px] text-amber-200/80 block">1st</span><span class="font-black text-amber-400 text-xs">₹350</span></div>
+                            <div><span class="text-[8px] text-amber-200/80 block">2nd</span><span class="font-black text-amber-400 text-[10px]">₹150</span></div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="joinMatch('Bermuda Duo War', 39, 500)" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-black font-black text-[11px] py-2.5 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition uppercase tracking-wider flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-gamepad"></i> Join Duo Match
+                </button>
+            </div>
+
+            <!-- Match 3 -->
+            <div class="rgb-card match-bg-image rounded-2xl p-3.5 shadow-xl space-y-2.5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-rose-950/80 text-rose-300 border border-rose-500/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase"><i class="fa-solid fa-fire text-red-500"></i> SQUAD • Bermuda</span>
+                        <h3 class="font-black text-xs text-white mt-1 flex items-center gap-1">
+                            Bermuda Squad War <span class="text-[9px] text-emerald-400 font-mono font-normal">#SQUAD800</span>
+                        </h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-emerald-500/40 shadow-inner">
+                        <p class="text-[8px] text-emerald-300 uppercase font-extrabold tracking-wider">Entry Fee</p>
+                        <p class="font-black text-emerald-400 text-base mt-0.5">₹59</p>
+                    </div>
+                    <div class="bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/40 shadow-inner">
+                        <p class="text-[8px] text-amber-300 uppercase font-extrabold tracking-wider">Prize Pool (Total ₹800)</p>
+                        <div class="flex justify-around mt-0.5">
+                            <div><span class="text-[8px] text-amber-200/80 block">1st</span><span class="font-black text-amber-400 text-xs">₹550</span></div>
+                            <div><span class="text-[8px] text-amber-200/80 block">2nd</span><span class="font-black text-amber-400 text-[10px]">₹250</span></div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="joinMatch('Bermuda Squad War', 59, 800)" class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-black font-black text-[11px] py-2.5 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition uppercase tracking-wider flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-gamepad"></i> Join Squad Match
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- WALLET TAB -->
+    <div id="walletTabContent" class="max-w-md mx-auto p-4 space-y-4 hidden tab-content">
+        <div class="rgb-card match-bg-image p-5 rounded-2xl space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase"><i class="fa-solid fa-shield-halved"></i> Secure Wallet</span>
+                <button onclick="switchTab('home')" class="text-xs text-amber-400 font-bold hover:underline"><i class="fa-solid fa-house"></i> Back to Home</button>
+            </div>
+            <div class="text-center space-y-1">
+                <p class="text-[10px] text-orange-300 uppercase font-extrabold tracking-wider">Dedicated Wallet Balance</p>
+                <h2 class="text-4xl font-black text-amber-400 drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)]" id="walletTabBalance">₹0.00</h2>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="openWalletModal('add')" class="rgb-card bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-black font-black py-3 rounded-xl text-xs shadow-lg shadow-orange-500/20 active:scale-95 transition flex items-center justify-center gap-1.5 uppercase border-amber-300">
+                    <i class="fa-solid fa-plus-circle"></i> Add Money
+                </button>
+                <button onclick="openWalletModal('withdraw')" class="rgb-card bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-bold py-3 rounded-xl text-xs shadow-lg shadow-rose-600/20 active:scale-95 transition flex items-center justify-center gap-1.5 uppercase border-rose-400">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Withdraw
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="profileTabContent" class="max-w-md mx-auto p-4 space-y-4 hidden tab-content">
+        <div class="rgb-card match-bg-image p-5 rounded-2xl space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="font-black text-sm text-amber-400 flex items-center gap-2 uppercase tracking-wide">
+                    <i class="fa-solid fa-user-shield text-lg text-cyan-400"></i> Player Profile & Session
+                </h3>
+                <button onclick="switchTab('home')" class="text-xs text-amber-400 font-bold hover:underline"><i class="fa-solid fa-house"></i> Home</button>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center"><span class="text-gray-400 font-medium">Player Name:</span> <input type="text" id="profileName" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-right w-40 font-bold"></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 font-medium">Contact (Mobile/Email):</span> <input type="text" id="profileContact" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-right w-40 font-mono text-xs"></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 font-medium">Free Fire In-Game Name:</span> <input type="text" id="profileFfName" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-white text-right w-40 font-bold"></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 font-medium">Free Fire UID:</span> <input type="number" id="profileFfUid" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-amber-400 font-mono text-right w-40 font-bold"></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 font-medium">Referral Code Used:</span> <input type="text" id="profileReferral" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-cyan-400 font-mono text-right w-40 font-bold" readonly></div>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <p class="text-[11px] font-bold text-amber-300 uppercase tracking-wide"><i class="fa-solid fa-trophy text-orange-400"></i> Tournament History & Stats:</p>
+                    <div class="flex justify-between text-gray-300 pt-1"><span>Total Matches Joined:</span> <span id="statMatches" class="text-cyan-400 font-bold font-mono">0</span></div>
+                    <div class="flex justify-between text-gray-300"><span>Wallet Balance:</span> <span id="statWallet" class="text-amber-400 font-bold font-mono">₹0.00</span></div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="saveProfileDetails()" class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black py-3 rounded-xl text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition uppercase tracking-wide">
+                        💾 Save Changes
+                    </button>
+                    <button onclick="logoutSession()" class="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/50 px-4 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HELP TAB -->
+    <div id="helpTabContent" class="max-w-md mx-auto p-4 space-y-4 hidden tab-content">
+        <div class="rgb-card match-bg-image p-5 rounded-2xl space-y-4 shadow-2xl">
+            <h3 class="font-black text-sm text-amber-400 flex items-center gap-2 uppercase tracking-wide">
+                <i class="fa-solid fa-headset text-lg text-orange-400"></i> 24/7 Need Help & Support
+            </h3>
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Facing issues with UTR deposit, match room ID, or tournament prize distribution? Connect directly with our Bihar FF Support Team instantly!
+            </p>
+            <div class="space-y-2.5 pt-2">
+                <a id="helpWhatsAppBtn" href="https://whatsapp.com/channel/biharff" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow-lg flex items-center justify-center gap-2 transition">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Chat on WhatsApp Support
+                </a>
+                <a id="helpTelegramBtn" href="https://t.me/bihar_free_fire_tournament" target="_blank" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 rounded-xl text-xs shadow-lg flex items-center justify-center gap-2 transition">
+                    <i class="fa-brands fa-telegram text-base"></i> Join Telegram Help Desk
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar with RGB Border -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto rgb-card bg-slate-950/95 backdrop-blur-lg px-2 py-2 flex justify-around items-center z-40 rounded-t-2xl shadow-2xl border-b-0">
+        <button onclick="switchTab('home')" id="navHome" class="flex flex-col items-center justify-center flex-1 py-1 text-amber-400 transition">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Home</span>
+        </button>
+        <button onclick="switchTab('wallet')" id="navWallet" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition">
+            <i class="fa-solid fa-wallet text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Wallet</span>
+        </button>
+        <button onclick="switchTab('help')" id="navHelp" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition">
+            <i class="fa-solid fa-headset text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Need Help</span>
+        </button>
+        <button onclick="switchTab('profile')" id="navProfile" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition">
+            <i class="fa-solid fa-user-shield text-base"></i>
+            <span class="text-[10px] font-bold mt-0.5">Profile</span>
+        </button>
+    </nav>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-all">
+        <div class="rgb-card match-bg-image w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="font-black text-sm text-white flex items-center gap-1.5" id="walletModalTitle">Wallet</h3>
+                <button onclick="closeWalletModal()" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-gray-400 hover:text-white rounded-full flex items-center justify-center text-xs transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="walletModalBody" class="space-y-3 text-xs"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 border border-orange-500/60 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold hidden z-50 flex items-center gap-2.5 backdrop-blur-md">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Action successful!</span>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let wallet = parseFloat(localStorage.getItem('bffct_wallet') || '0.00');
+        let currentDay = parseInt(localStorage.getItem('bffct_day') || '1');
+        let rewardClaimed = localStorage.getItem('bffct_reward_claimed') === 'true';
+        let matchesCount = parseInt(localStorage.getItem('bffct_matches_count') || '0');
+        const rewardsConfig = [1, 1, 1, 1, 1, 1, 5];
+        let currentActiveTab = 'home';
+        let generatedOtpCode = "";
+
+        // Permanent Locked Defaults
+        let adminUpiId = "8521292790@airtel";
+        let telegramUrl = "https://t.me/bihar_free_fire_tournament";
+        let youtubeUrl = "https://youtube.com/@biharfreefirecustom";
+        let whatsappUrl = "https://whatsapp.com/channel/biharff";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            applySavedLinks();
+            updateWalletUI();
+            renderDailyRewards();
+        });
+
+        function requireAuth(callback) {
+            let registered = localStorage.getItem('bffct_registered') === 'true';
+            if(registered) {
+                callback();
+            } else {
+                document.getElementById('authScreen').classList.remove('hidden');
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authScreen').classList.add('hidden');
+        }
+
+        function requestVerificationCode() {
+            let name = document.getElementById('regName').value.trim();
+            let contact = document.getElementById('regContact').value.trim();
+
+            if(!name || name.length < 2) {
+                showToast('❌ Please enter your player name.', 'error');
+                return;
+            }
+            if(!contact || contact.length < 5) {
+                showToast('❌ Please enter a valid Mobile Number or Email ID.', 'error');
+                return;
+            }
+
+            // Generate 6-digit Bot Verification Code
+            generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('displayOtp').innerText = generatedOtpCode;
+
+            document.getElementById('authStep1').classList.add('hidden');
+            document.getElementById('authStep2').classList.remove('hidden');
+            showToast('🤖 Bot Verification Code generated successfully!');
+        }
+
+        function completeRegistration() {
+            let enteredOtp = document.getElementById('enteredOtp').value.trim();
+            let ffName = document.getElementById('regFfName').value.trim();
+            let ffUid = document.getElementById('regFfUid').value.trim();
+            let referral = document.getElementById('regReferral').value.trim();
+
+            if(enteredOtp !== generatedOtpCode) {
+                showToast('❌ Incorrect Verification Code! Please check the code shown above.', 'error');
+                return;
+            }
+            if(!ffName || ffName.length < 2) {
+                showToast('❌ Please enter your Free Fire In-Game Name.', 'error');
+                return;
+            }
+            if(!ffUid || ffUid.length < 5) {
+                showToast('❌ Please enter a valid Free Fire UID.', 'error');
+                return;
+            }
+
+            localStorage.setItem('bffct_registered', 'true');
+            localStorage.setItem('bffct_p_name', document.getElementById('regName').value.trim());
+            localStorage.setItem('bffct_p_contact', document.getElementById('regContact').value.trim());
+            localStorage.setItem('bffct_p_ffname', ffName);
+            localStorage.setItem('bffct_p_uid', ffUid);
+            localStorage.setItem('bffct_p_referral', referral || 'None');
+
+            document.getElementById('authScreen').classList.add('hidden');
+            loadProfileData();
+            showToast('🎉 Registration & Persistent Session Saved Successfully!');
+        }
+
+        function logoutSession() {
+            if(confirm("Are you sure you want to log out of this session?")) {
+                localStorage.removeItem('bffct_registered');
+                showToast('🔒 Logged out successfully.');
+                setTimeout(() => { location.reload(); }, 1500);
+            }
+        }
+
+        function applySavedLinks() {
+            document.getElementById('linkTelegram').href = telegramUrl;
+            document.getElementById('linkYoutube').href = youtubeUrl;
+            document.getElementById('linkWhatsapp').href = whatsappUrl;
+            document.getElementById('helpWhatsAppBtn').href = whatsappUrl;
+            document.getElementById('helpTelegramBtn').href = telegramUrl;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMessage.innerText = message;
+            toastIcon.innerText = type === 'success' ? '✅' : '⚠️';
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+        }
+
+        function updateWalletUI() {
+            document.getElementById('walletBalance').innerText = '₹' + wallet.toFixed(2);
+            document.getElementById('walletTabBalance').innerText = '₹' + wallet.toFixed(2);
+            document.getElementById('quickWalletBal').innerText = '₹' + wallet.toFixed(0);
+            document.getElementById('statWallet').innerText = '₹' + wallet.toFixed(2);
+            localStorage.setItem('bffct_wallet', wallet);
+        }
+
+        function switchTab(tabName) {
+            if(tabName === 'profile') {
+                requireAuth(() => { loadProfileData(); });
+            }
+
+            if(currentActiveTab === tabName) return;
+            currentActiveTab = tabName;
+
+            const homeEl = document.getElementById('homeTabContent');
+            const walletEl = document.getElementById('walletTabContent');
+            const helpEl = document.getElementById('helpTabContent');
+            const profileEl = document.getElementById('profileTabContent');
+
+            [homeEl, walletEl, helpEl, profileEl].forEach(el => {
+                if(!el.classList.contains('hidden')) el.classList.add('slide-left');
+            });
+
+            setTimeout(() => {
+                homeEl.classList.add('hidden');
+                walletEl.classList.add('hidden');
+                helpEl.classList.add('hidden');
+                profileEl.classList.add('hidden');
+
+                homeEl.classList.remove('slide-left', 'slide-right');
+                walletEl.classList.remove('slide-left', 'slide-right');
+                helpEl.classList.remove('slide-left', 'slide-right');
+                profileEl.classList.remove('slide-left', 'slide-right');
+
+                let targetEl = tabName === 'home' ? homeEl : (tabName === 'wallet' ? walletEl : (tabName === 'help' ? helpEl : profileEl));
+                if(targetEl) {
+                    targetEl.classList.remove('hidden');
+                    targetEl.classList.add('slide-right');
+                    setTimeout(() => { targetEl.classList.remove('slide-right'); }, 20);
+                }
+            }, 200);
+
+            document.getElementById('navHome').className = "flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition";
+            document.getElementById('navWallet').className = "flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition";
+            document.getElementById('navHelp').className = "flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition";
+            document.getElementById('navProfile').className = "flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-amber-400 transition";
+
+            if(tabName === 'home') document.getElementById('navHome').className = "flex flex-col items-center justify-center flex-1 py-1 text-amber-400 transition";
+            else if(tabName === 'wallet') document.getElementById('navWallet').className = "flex flex-col items-center justify-center flex-1 py-1 text-amber-400 transition";
+            else if(tabName === 'help') document.getElementById('navHelp').className = "flex flex-col items-center justify-center flex-1 py-1 text-amber-400 transition";
+            else if(tabName === 'profile') document.getElementById('navProfile').className = "flex flex-col items-center justify-center flex-1 py-1 text-cyan-400 transition";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderDailyRewards() {
+            let grid = document.getElementById('dailyRewardGrid');
+            grid.innerHTML = '';
+            document.getElementById('currentDayText').innerText = `Day ${currentDay} / 7`;
+
+            rewardsConfig.forEach((amount, index) => {
+                let dayNum = index + 1;
+                let isCurrent = dayNum === currentDay;
+                let isPast = dayNum < currentDay;
+
+                let cardClass = "p-1.5 rounded-lg border text-[10px] flex flex-col items-center justify-center transition ";
+                if(isPast) cardClass += "bg-emerald-950/85 border-emerald-500/50 text-emerald-400 opacity-75";
+                else if(isCurrent) cardClass += "bg-amber-950/90 border-amber-500 text-amber-300 font-bold shadow-md shadow-amber-500/20";
+                else cardClass += "bg-slate-950 border-slate-800 text-gray-500";
+
+                grid.innerHTML += `<div class="${cardClass}"><span>D${dayNum}</span><span class="font-black text-xs">₹${amount}</span></div>`;
+            });
+
+            let btn = document.getElementById('claimDailyBtn');
+            if(rewardClaimed) {
+                btn.innerText = "✅ REWARD CLAIMED TODAY";
+                btn.disabled = true;
+                btn.className = "w-full bg-slate-800 text-gray-500 font-bold py-2.5 rounded-xl text-xs cursor-not-allowed";
+            } else {
+                let rewardAmt = rewardsConfig[currentDay - 1];
+                btn.innerText = `🎁 CLAIM DAY ${currentDay} REWARD (₹${rewardAmt})`;
+                btn.disabled = false;
+                btn.className = "w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-700 text-black font-black py-2.5 rounded-xl text-xs shadow-lg shadow-orange-500/20 active:scale-95 transition";
+            }
+        }
+
+        function claimDailyReward() {
+            requireAuth(() => {
+                if(!rewardClaimed) {
+                    let rewardAmt = rewardsConfig[currentDay - 1];
+                    wallet += rewardAmt;
+                    rewardClaimed = true;
+                    localStorage.setItem('bffct_reward_claimed', 'true');
+                    updateWalletUI();
+                    showToast(`🎉 Bonus ₹${rewardAmt}.00 Added to Wallet successfully!`);
+                    if(currentDay === 7) currentDay = 1; else currentDay++;
+                    localStorage.setItem('bffct_day', currentDay);
+                    renderDailyRewards();
+                }
+            });
+        }
+
+        function openWalletModal(mode) {
+            requireAuth(() => {
+                document.getElementById('walletModal').classList.remove('hidden');
+                let body = document.getElementById('walletModalBody');
+                if(mode === 'add') {
+                    document.getElementById('walletModalTitle').innerHTML = '<i class="fa-solid fa-wallet text-amber-400"></i> Auto UPI QR & Deposit';
+                    let upiPayUrl = `upi://pay?pa=${adminUpiId}&pn=BiharFFTournament&cu=INR`;
+                    let qrImageSrc = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiPayUrl)}`;
+
+                    body.innerHTML = `
+                        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3 text-center">
+                            <p class="text-gray-300 text-xs">Scan QR with PhonePe / GPay / Paytm:</p>
+                            <div class="w-40 h-40 mx-auto bg-white p-2 rounded-xl shadow-md flex items-center justify-center border-2 border-amber-500 overflow-hidden">
+                                <img src="${qrImageSrc}" alt="Auto UPI QR Code" class="w-full h-full object-contain">
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] text-gray-400">Official Receiving UPI ID:</p>
+                                <p class="text-xs font-mono font-bold text-amber-400">${adminUpiId}</p>
+                            </div>
+                            <div class="pt-1">
+                                <button onclick="copyUpiId()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded text-[10px] font-bold"><i class="fa-solid fa-copy"></i> Copy UPI ID</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 font-bold mb-1 block">Enter 12-Digit UTR / UPI Ref Number</label>
+                            <input type="text" id="utrInput" placeholder="e.g. 432109876543" class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white outline-none text-xs">
+                        </div>
+                        <button onclick="submitUtr()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-black font-black py-2.5 rounded-xl text-xs shadow-lg shadow-orange-500/25 transition">Verify UTR & Add Money</button>
+                    `;
+                } else {
+                    document.getElementById('walletModalTitle').innerHTML = '<i class="fa-solid fa-money-bill-transfer text-rose-400"></i> Withdraw Money (Instant UPI)';
+                    body.innerHTML = `
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
+                            <div class="flex justify-between"><span class="text-gray-400">Withdrawable Balance:</span> <span class="text-amber-400 font-bold">₹${wallet.toFixed(2)}</span></div>
+                            <div class="flex justify-between"><span class="text-rose-400 font-bold">Minimum Withdrawal:</span> <span class="text-rose-400 font-bold">₹50.00</span></div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 font-bold mb-1 block">Withdrawal Amount (Min ₹50)</label>
+                            <input type="number" id="withdrawAmt" placeholder="Enter amount (Min ₹50)" class="w-full bg-slate-950 border border-slate-700 focus:border-rose-400 rounded-xl px-3 py-2.5 text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 font-bold mb-1 block">Your UPI ID / Number</label>
+                            <input type="text" id="upiIdInput" placeholder="UPI ID" class="w-full bg-slate-950 border border-slate-700 focus:border-rose-400 rounded-xl px-3 py-2.5 text-white outline-none">
+                        </div>
+                        <button onclick="submitWithdraw()" class="w-full bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-black py-2.5 rounded-xl text-xs shadow-lg shadow-rose-600/25 transition">Request Withdrawal</button>
+                    `;
+                }
+            });
+        }
+
+        function closeWalletModal() { 
+            document.getElementById('walletModal').classList.add('hidden'); 
+        }
+
+        function submitUtr() {
+            let utr = document.getElementById('utrInput').value.trim();
+            if(utr.length >= 8) {
+                wallet += 100;
+                updateWalletUI();
+                closeWalletModal();
+                showToast('✅ UTR Verified Successfully! ₹100 added.');
+            } else {
+                showToast('❌ Please enter a valid UTR number.', 'error');
+            }
+        }
+
+        function copyUpiId() {
+            navigator.clipboard.writeText(adminUpiId).then(() => {
+                showToast('✅ Copied to Clipboard!');
+            }).catch(() => {
+                showToast('❌ Copy failed.', 'error');
+            });
+        }
+
+        function submitWithdraw() {
+            let amt = parseFloat(document.getElementById('withdrawAmt').value);
+            let upi = document.getElementById('upiIdInput').value.trim();
+            
+            if (!amt || amt < 50) {
+                showToast('❌ Minimum withdrawal limit is ₹50!', 'error');
+                return;
+            }
+            if (amt > wallet) {
+                showToast('❌ Insufficient wallet balance!', 'error');
+                return;
+            }
+            if (upi.length < 3) {
+                showToast('❌ Please enter a valid UPI ID!', 'error');
+                return;
+            }
+
+            wallet -= amt;
+            updateWalletUI();
+            closeWalletModal();
+            showToast('✅ Withdrawal Request of ₹' + amt + ' Submitted Successfully!');
+        }
+
+        function loadProfileData() {
+            document.getElementById('profileName').value = localStorage.getItem('bffct_p_name') || '';
+            document.getElementById('profileContact').value = localStorage.getItem('bffct_p_contact') || '';
+            document.getElementById('profileFfName').value = localStorage.getItem('bffct_p_ffname') || '';
+            document.getElementById('profileFfUid').value = localStorage.getItem('bffct_p_uid') || '';
+            document.getElementById('profileReferral').value = localStorage.getItem('bffct_p_referral') || 'None';
+            document.getElementById('statMatches').innerText = matchesCount;
+        }
+
+        function saveProfileDetails() {
+            requireAuth(() => {
+                localStorage.setItem('bffct_p_name', document.getElementById('profileName').value.trim());
+                localStorage.setItem('bffct_p_contact', document.getElementById('profileContact').value.trim());
+                localStorage.setItem('bffct_p_ffname', document.getElementById('profileFfName').value.trim());
+                localStorage.setItem('bffct_p_uid', document.getElementById('profileFfUid').value.trim());
+
+                showToast('✅ Profile Details Saved Permanently!');
+            });
+        }
+
+        function joinMatch(title, fee, prize) {
+            requireAuth(() => {
+                if (wallet >= fee) {
+                    wallet -= fee;
+                    matchesCount++;
+                    localStorage.setItem('bffct_matches_count', matchesCount);
+                    updateWalletUI();
+                    document.getElementById('statMatches').innerText = matchesCount;
+                    showToast(`✅ Successfully joined ${title}! Room ID shared.`);
+                } else {
+                    showToast(`❌ Insufficient balance! Please add ₹${fee - wallet} more.`, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+```
+@@eof
